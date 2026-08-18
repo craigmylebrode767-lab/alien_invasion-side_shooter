@@ -13,7 +13,8 @@ class Alien():
         self.rect = self.image.get_rect()
 
         #还有初始位置
-        self.rect.midright = sssgame.screen_rect.midright
+        self.rect.right = sssgame.screen_rect.right
+        self.rect.y = self.rect.height
 
         # alien速度
         self.xspeed = sssgame.settings.alien_xspeed
@@ -24,8 +25,11 @@ class Alien():
         self.rect.x -= self.xspeed
 
         #纵向移动
-        if self.rect.top >= 0 and self.rect.bottom <= self.screen.get_rect().bottom:
-            self.rect.y += choice([-1, 0, 1]) * self.yspeed
+        '''方案一：移动方向随机，移动的幅度为yspeed'''
+        '''方案二：位置随机'''
+        '''还要考虑是否每一帧都要移动纵向，还是每一帧都有一定概率移动纵向'''
+        # if self.rect.top >= 0 and self.rect.bottom <= self.screen.get_rect().bottom:
+        #     self.rect.y += choice([-1, 0, 1]) * self.yspeed
 
 
 

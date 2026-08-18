@@ -22,14 +22,15 @@ class Sidescrollingshooter:
         #控制帧率的时钟
         self.clock = pygame.time.Clock()
 
-        #飞船
+        #初始化创建飞船
         self.ship = Ship(self)
 
         #子弹
         self.bullets = []
 
-        #外星人
-        self.aliens = [Alien(self)]
+        #初始化创建外星人
+        self.aliens = []
+        self._create_fleets()
 
        
 
@@ -128,7 +129,7 @@ class Sidescrollingshooter:
         #改变数量等等功能
 
     def _update_bullets(self): 
-        for bullet in self.bullets:
+        for bullet in self.bullets.copy():
             #改变子弹位置
             bullet.update_position()
 
@@ -146,6 +147,33 @@ class Sidescrollingshooter:
 
             #其他功能
             pass
+
+    def _create_fleets(self):
+        #创建外星人群
+        alien = Alien(self)
+        self.aliens.append(alien)
+        alien_width, alien_height = alien.rect.size
+        current_x = alien.rect.x
+        for i in range(3):
+            current_y = alien.rect.y
+            #纵向创建new_alien,在y处创建
+            while current_y < self.screen_rect.bottom - 4 * alien_height:
+                self._create_alien(current_x, current_y+2*alien_height)
+                current_y += 2 * alien_height
+
+            #横向创建alien
+            if i < 2:
+                self._create_alien(current_x-2*alien_width, alien.rect.y)
+                current_x -= 2 * alien.rect.width
+
+    def _create_alien(self, x_position='', y_position=''):
+        """创建一个外星人并将其放在当前行中"""
+        new_alien = Alien(self)
+
+        new_alien.rect.x = x_position
+        new_alien.rect.y = y_position
+
+        self.aliens.append(new_alien)
 
 
 if __name__ == '__main__':
