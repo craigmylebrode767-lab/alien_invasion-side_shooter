@@ -154,17 +154,14 @@ class Sidescrollingshooter:
         self.aliens.append(alien)
         alien_width, alien_height = alien.rect.size
         current_x = alien.rect.x
+        current_y = alien.rect.y
         for i in range(3):
-            current_y = alien.rect.y
             #纵向创建new_alien,在y处创建
-            while current_y < self.screen_rect.bottom - 4 * alien_height:
-                self._create_alien(current_x, current_y+2*alien_height)
+            while current_y < self.screen_rect.bottom - alien_height:
+                self._create_alien(current_x, current_y)
                 current_y += 2 * alien_height
-
-            #横向创建alien
-            if i < 2:
-                self._create_alien(current_x-2*alien_width, alien.rect.y)
-                current_x -= 2 * alien.rect.width
+            current_y = alien.rect.y
+            current_x += 2 * alien.rect.width
 
     def _create_alien(self, x_position='', y_position=''):
         """创建一个外星人并将其放在当前行中"""
