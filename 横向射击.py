@@ -21,10 +21,11 @@ class Sidescrollingshooter:
         self.ship = Ship(self)
 
         #子弹
-        self.bullet = Bullet(self)
+        self.bullets = []
 
     def run_game(self):
 
+        
         while True:
 
             '''while循环的次数是即为FPS，需要clock来设置
@@ -45,7 +46,8 @@ class Sidescrollingshooter:
             self._update_ship()
 
             #改变子弹的位置等参数
-            self._update_bullets()
+            for bullet in self.bullets:
+                self._update_bullets(bullet)
 
             #涂背景色，绘制飞船图像,子弹图像
             self._update_screen()
@@ -54,8 +56,9 @@ class Sidescrollingshooter:
             pygame.display.flip()
 
             #控制帧率
-            self.clock.tick(60)
+            self.clock.tick(1)
 
+        
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -74,6 +77,8 @@ class Sidescrollingshooter:
                     self.ship.moving_left = True
                 elif event.key == pygame.K_RIGHT:
                     self.ship.moving_right = True
+                elif event.key == pygame.K_SPACE:
+                    self.bullets.append(Bullet(self))
 
 
 
@@ -98,16 +103,17 @@ class Sidescrollingshooter:
         self.screen.blit(self.ship.image, self.ship.rect)
 
         # 绘制子弹图案
-        self.screen.blit(self.bullet.image, self.bullet.rect)
+        for bullet in self.bullets:
+            self.screen.blit(bullet.image, bullet.rect)
 
     def _update_ship(self):
         #改变飞船位置
         self.ship.update_position(self)
         #改变数量等等功能
 
-    def _update_bullets(self):
+    def _update_bullets(self, bullet):
         #改变子弹位置
-        self.bullet.update_position()
+        bullet.update_position()
         #改变数量等等功能
 
 if __name__ == '__main__':
