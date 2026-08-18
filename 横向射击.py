@@ -22,21 +22,21 @@ class Sidescrollingshooter:
 
         while True:
 
-            #while循环的次数是即为FPS，需要clock来设置
-            #然后思考每个循环即每一帧需要做什么：获取键鼠事件、执行动作（本来就要执行的比如子弹的 ）
-            #的移动，以及键鼠事件控制执行的）、把后端改变的数据绘制到屏幕
-            #暂时先添加按Q退出的功能，安全起见，也添加鼠标点击退出的功能
+            '''while循环的次数是即为FPS，需要clock来设置
+            然后思考每个循环即每一帧需要做什么：获取键鼠事件、执行动作（本来就要执行的比如子弹的 ）
+            的移动，以及键鼠事件控制执行的）、把后端改变的数据绘制到屏幕
+            暂时先添加按Q退出的功能，安全起见，也添加鼠标点击退出的功能'''
 
 
 
             self._check_events()
 
-            #对屏幕进行更改：每一帧都：绘制背景色，绘制飞船图像。
-            # 现在考虑通过键鼠事件移动飞船
-            #宏观逻辑：
-            #check_events--keydown/keyup--K_left/right/up/down--
-            # self.ship.image_rect.x/y改变--update_screen时飞船位置
-            # 参数self.ship.image_rect改变
+            '''对屏幕进行更改：每一帧都：绘制背景色，绘制飞船图像。
+            现在考虑通过键鼠事件移动飞船
+            宏观逻辑：
+            check_events--keydown/keyup--K_left/right/up/down--
+            self.ship.image_rect.x/y改变--update_screen时飞船位置
+            参数self.ship.image_rect改变'''
 
             #改变飞船的位置等参数
             self._update_ship()
