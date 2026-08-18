@@ -1,6 +1,8 @@
 import pygame
 import sys
+
 from ship import Ship
+from bullets import Bullet
 
 
 class Sidescrollingshooter:
@@ -18,6 +20,9 @@ class Sidescrollingshooter:
         #飞船
         self.ship = Ship(self)
 
+        #子弹
+        self.bullet = Bullet(self)
+
     def run_game(self):
 
         while True:
@@ -26,8 +31,6 @@ class Sidescrollingshooter:
             然后思考每个循环即每一帧需要做什么：获取键鼠事件、执行动作（本来就要执行的比如子弹的 ）
             的移动，以及键鼠事件控制执行的）、把后端改变的数据绘制到屏幕
             暂时先添加按Q退出的功能，安全起见，也添加鼠标点击退出的功能'''
-
-
 
             self._check_events()
 
@@ -41,14 +44,16 @@ class Sidescrollingshooter:
             #改变飞船的位置等参数
             self._update_ship()
 
-            # 注意到绘制飞船时提供的position在_init_
-            #里被固定了
+            #改变子弹的位置等参数
+            self._update_bullets()
+
+            #涂背景色，绘制飞船图像,子弹图像
             self._update_screen()
 
-
-
+            #显示屏幕
             pygame.display.flip()
 
+            #控制帧率
             self.clock.tick(60)
 
 
@@ -92,12 +97,19 @@ class Sidescrollingshooter:
         # 绘制飞船图案，需要读取bmp文件--添加到screen上
         self.screen.blit(self.ship.image, self.ship.rect)
 
+        # 绘制子弹图案
+        self.screen.blit(self.bullet.image, self.bullet.rect)
+
     def _update_ship(self):
         #改变飞船位置
-        self.ship.update_position()
+        self.ship.update_position(self)
+        #改变数量等等功能
+
+    def _update_bullets(self):
+        #改变子弹位置
+        self.bullet.update_position()
         #改变数量等等功能
 
 if __name__ == '__main__':
     sss = Sidescrollingshooter()
     sss.run_game()
-
