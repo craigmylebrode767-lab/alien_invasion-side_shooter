@@ -3,6 +3,7 @@ import sys
 
 from ship import Ship
 from bullets import Bullet
+from aliens import Alien    
 from settings import Settings
 
 
@@ -26,6 +27,9 @@ class Sidescrollingshooter:
 
         #子弹
         self.bullets = []
+
+        #外星人
+        self.aliens = [Alien(self)]
 
        
 
@@ -53,6 +57,9 @@ class Sidescrollingshooter:
 
             #改变子弹的位置等参数，清除飞出屏幕的子弹
             self._update_bullets()
+
+            #改变外星人的位置等参数
+            self._update_aliens()
 
             #涂背景色，绘制飞船图像,子弹图像
             self._update_screen()
@@ -111,6 +118,10 @@ class Sidescrollingshooter:
         for bullet in self.bullets:
             self.screen.blit(bullet.image, bullet.rect)
 
+        # 绘制外星人图案
+        for alien in self.aliens:
+            self.screen.blit(alien.image, alien.rect)
+
     def _update_ship(self):
         #改变飞船位置
         self.ship.update_position()
@@ -128,6 +139,13 @@ class Sidescrollingshooter:
             #其他功能
             pass
 
+    def _update_aliens(self):
+        for alien in self.aliens:
+            #改变外星人位置
+            alien.update_position()
+
+            #其他功能
+            pass
 
 
 if __name__ == '__main__':
