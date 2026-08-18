@@ -3,6 +3,7 @@ import sys
 
 from ship import Ship
 from bullets import Bullet
+from settings import Settings
 
 
 class Sidescrollingshooter:
@@ -10,6 +11,9 @@ class Sidescrollingshooter:
         #别忘了初始化
         pygame.init()
 
+        #游戏设置
+        self.settings = Settings()
+        
         #创建屏幕
         self.screen =pygame.display.set_mode((800,600))
         self.screen_rect = self.screen.get_rect()
@@ -22,6 +26,8 @@ class Sidescrollingshooter:
 
         #子弹
         self.bullets = []
+
+       
 
     def run_game(self):
 
@@ -45,9 +51,8 @@ class Sidescrollingshooter:
             #改变飞船的位置等参数
             self._update_ship()
 
-            #改变子弹的位置等参数
-            for bullet in self.bullets:
-                self._update_bullets(bullet)
+            #改变子弹的位置等参数，清除飞出屏幕的子弹
+            self._update_bullets()
 
             #涂背景色，绘制飞船图像,子弹图像
             self._update_screen()
@@ -56,7 +61,7 @@ class Sidescrollingshooter:
             pygame.display.flip()
 
             #控制帧率
-            self.clock.tick(1)
+            self.clock.tick(60)
 
         
 
@@ -108,13 +113,22 @@ class Sidescrollingshooter:
 
     def _update_ship(self):
         #改变飞船位置
-        self.ship.update_position(self)
+        self.ship.update_position()
         #改变数量等等功能
 
-    def _update_bullets(self, bullet):
-        #改变子弹位置
-        bullet.update_position()
-        #改变数量等等功能
+    def _update_bullets(self): 
+        for bullet in self.bullets:
+            #改变子弹位置
+            bullet.update_position()
+
+            #清除飞出屏幕的子弹
+            if bullet.rect.left > self.screen_rect.right:
+                self.bullets.remove(bullet)
+
+            #其他功能
+            pass
+
+
 
 if __name__ == '__main__':
     sss = Sidescrollingshooter()
