@@ -150,54 +150,56 @@ class Sidescrollingshooter:
             alien.update_position()
 
         #检测外星人与子弹碰撞
-        i,j = 0,0
+        # i,j = 0,0
         if self.bullets and self.aliens:
             for bullet in self.bullets.copy():
-                i += 1
+                # i += 1
                 for alien in self.aliens.copy():
-                    j+=1
+                    # j+=1
                     #检测俩个surface有重叠
-                    if not (
-                        bullet.rect.right <= alien.rect.left or
-                        bullet.rect.bottom <= alien.rect.top or
-                        bullet.rect.top >= alien.rect.bottom or
-                        bullet.rect.left >= alien.rect.right
-                    ):
-                        try:
-                            self.bullets.remove(bullet)
-                            print(bullet,bullet.rect)
-                            self.aliens.remove(alien)
-                            print(alien,alien.rect)
-                            print(i,j)
+                    if self._rect_collision(bullet.rect,alien.rect):
+                        self.bullets.remove(bullet)
+                        self.aliens.remove(alien)
+                          
+        for alien in self.aliens.copy():
+            #检测外星人与飞船碰撞
+            if self._rect_collision(self.ship.rect,alien.rect):
+                self.aliens.remove(alien)
+                # self.ships.remove(ship)
 
-                        except ValueError:
-                            print(self.bullets)
-                            print("出错的子弹:",bullet)
-                            print("出错的外星人:",alien)
-                            print(alien.rect,bullet.rect)
-                            print("子弹列表长度:", len(self.bullets))
-                            print(i,j)
 
         #清除飞出屏幕的外星人
-        for alien in self.aliens:
+        for alien in self.aliens.copy():
             if alien.rect.right <self.screen_rect.left:
                 self.aliens.remove(alien)
 
             #其他功能
             pass
 
+    #检测碰撞，若俩rect有重叠则返回True
+    def _rect_collision(self,rect_1,rect_2):
+        if (
+            rect_1.right <= rect_2.left or
+            rect_1.left >= rect_2.right or
+            rect_1.bottom <= rect_2.top or
+            rect_1.top >= rect_2.bottom
+        ):
+            return False
+        else :
+            return True
+
+
     def _create_fleets(self):
         #创建外星人群
         alien = Alien(self)
         self.aliens.append(alien)
-        alien_width, alien_height = alien.rect.size
         current_x = alien.rect.x
         current_y = alien.rect.y+2*alien.rect.height
         for i in range(3):
             #纵向创建new_alien,在y处创建
-            while current_y < self.screen_rect.bottom - alien_height:
+            while current_y < self.screen_rect.bottom - alien.rect.height:
                 self._create_alien(current_x, current_y)
-                current_y += 2 * alien_height
+                current_y += 2 * alien.rect.height
             current_y = alien.rect.y
             current_x += 2 * alien.rect.width
 

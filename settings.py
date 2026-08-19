@@ -7,3 +7,9 @@ class Settings():
         self.bullet_speed = 5
         self.alien_xspeed = 3
         self.alien_yspeed = 2
+
+        #飞船限额
+        self.ship_left = 3
+
+        #
+        self.speed_scale = 1.5
