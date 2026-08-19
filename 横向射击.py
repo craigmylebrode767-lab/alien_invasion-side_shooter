@@ -22,8 +22,9 @@ class Sidescrollingshooter:
         self.screen =pygame.display.set_mode((800,600))
         self.screen_rect = self.screen.get_rect()
 
-        #控制帧率的时钟
+        #时间相关
         self.clock = pygame.time.Clock()
+        self.paused = False
 
         #初始化创建飞船
         self.ship = Ship(self)
@@ -40,31 +41,29 @@ class Sidescrollingshooter:
        
 
     def run_game(self):
-
-
         while True:
-
-
             #检查键鼠事件
             self._check_events()
 
-            #改变飞船的位置等参数
-            self._update_ship()
+            if not self.paused:
+                #改变飞船的位置等参数
+                self._update_ship()
 
-            #改变子弹的位置等参数，清除飞出屏幕的子弹
-            self._update_bullets()
+                #改变子弹的位置等参数，清除飞出屏幕的子弹
+                self._update_bullets()
 
-            #改变外星人的位置等参数
-            self._update_aliens()
+                #改变外星人的位置等参数
+                self._update_aliens()
 
-            #检测是否结束单次游戏
-            self._check_game_over()
+                #检测是否结束单次游戏
+                self._check_game_over()
 
             #涂背景色，绘制飞船图像,子弹图像
             self._update_screen()
 
             #显示屏幕
             pygame.display.flip()
+            pygame.display.set_caption("横向射击",'sidescrollingshooter')
 
             #控制帧率
             self.clock.tick(60)
@@ -90,6 +89,8 @@ class Sidescrollingshooter:
                     self.ship.moving_right = True
                 elif event.key == pygame.K_SPACE:
                     self.bullets.append(Bullet(self))
+                elif event.key == pygame.K_p:
+                    self.paused = not self.paused
 
 
 
@@ -107,6 +108,7 @@ class Sidescrollingshooter:
                     sys.exit()
 
     def _update_screen(self):
+
         # 虽然背景色始终不变，但最好放到循环内部，这样每一帧都是独立的不容易残留
         self.screen.fill((255, 255, 255))
 
@@ -120,6 +122,14 @@ class Sidescrollingshooter:
         # 绘制外星人图案
         for alien in self.aliens:
             self.screen.blit(alien.image, alien.rect)
+
+        #暂停时绘制文字
+        if self.paused:
+            pause_text = pygame.font.Font('freesansbold.ttf',20)
+            pt_surf = pause_text.render('PAUSE',True,(0,0,255))
+            pt_rect = pt_surf.get_rect()
+            pt_rect.center = self.screen_rect.center
+            self.screen.blit(pt_surf,pt_rect)
 
     def _update_ship(self):
         #改变飞船位置
@@ -138,9 +148,6 @@ class Sidescrollingshooter:
             #其他功能
             pass
 
-
-    ###外星人设置：
-    #_update_aliens
 
     def _update_aliens(self):
         for alien in self.aliens:
