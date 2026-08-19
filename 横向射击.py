@@ -37,7 +37,8 @@ class Sidescrollingshooter:
         self.aliens = []
         self._create_fleets()
 
-
+        self.game_over = False
+        self.game_win = True
        
 
     def run_game(self):
@@ -48,6 +49,9 @@ class Sidescrollingshooter:
             self._check_events()
 
             if  self.game_active:
+                #根据上局结果决定是否初始化数据与升级数据
+                self._check_last_game()
+
                 #改变飞船的位置等参数
                 self._update_ship()
 
@@ -171,8 +175,10 @@ class Sidescrollingshooter:
 
     def _check_game_over(self):
         if not self.aliens:
-            time.sleep(1)
-            self._restart_win()
+            self.game_over = True
+            self.game_win = True
+            self.aliens.clear()
+            self.bullets.clear()
         else:
             for alien in self.aliens.copy():
                 #检测外星人与飞船碰撞与飞出屏幕的外星人
@@ -180,8 +186,10 @@ class Sidescrollingshooter:
                     self._rect_collision(self.ship.rect,alien.rect) or
                     alien.rect.left < self.screen_rect.left
                 ) :
-                    time.sleep(1)
-                    self._restart_lose()
+                    self.game_over = True
+                    self.game_win = False
+                    self.aliens.clear()
+                    self.bullets.clear()
                     break
 
 
@@ -223,23 +231,23 @@ class Sidescrollingshooter:
 
         self.aliens.append(new_alien)
 
-    def _restart_lose(self):
-        if self.settings.ship_left > 0 :
-            #先清空再生成
-            self._reset_aliens_bullets_ship()
-            self.settings.ship_left -= 1
-        else :
-            sys.exit()
 
     def _reset_aliens_bullets_ship(self):
         self.ship.rect.midleft = self.screen_rect.midleft
-        self.aliens.clear()
-        self.bullets.clear()
         self._create_fleets()
 
-    def _restart_win(self):
-        self._reset_aliens_bullets_ship()
-        self.settings.alien_xspeed *= self.settings.speed_scale
+    def _check_last_game(self):
+        if self.game_over:
+            time.sleep(1)
+            self.game_over = False
+            self._reset_aliens_bullets_ship()
+            if self.game_win:
+                self.settings.alien_xspeed *= self.settings.speed_scale
+            else:
+                if self.settings.ship_left > 0:
+                    self.settings.ship_left -= 1
+                else:
+                    sys.exit()
 
 
 if __name__ == '__main__':
