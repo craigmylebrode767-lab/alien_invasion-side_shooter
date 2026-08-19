@@ -24,7 +24,7 @@ class Sidescrollingshooter:
 
         #时间相关
         self.clock = pygame.time.Clock()
-        self.paused = False
+        self.game_active = False
 
         #初始化创建飞船
         self.ship = Ship(self)
@@ -42,10 +42,12 @@ class Sidescrollingshooter:
 
     def run_game(self):
         while True:
+
+
             #检查键鼠事件
             self._check_events()
 
-            if not self.paused:
+            if  self.game_active:
                 #改变飞船的位置等参数
                 self._update_ship()
 
@@ -90,7 +92,7 @@ class Sidescrollingshooter:
                 elif event.key == pygame.K_SPACE:
                     self.bullets.append(Bullet(self))
                 elif event.key == pygame.K_p:
-                    self.paused = not self.paused
+                    self.game_active = not self.game_active
 
 
 
@@ -124,7 +126,7 @@ class Sidescrollingshooter:
             self.screen.blit(alien.image, alien.rect)
 
         #暂停时绘制文字
-        if self.paused:
+        if not self.game_active:
             pause_text = pygame.font.Font('freesansbold.ttf',20)
             pt_surf = pause_text.render('PAUSE',True,(0,0,255))
             pt_rect = pt_surf.get_rect()
@@ -168,16 +170,22 @@ class Sidescrollingshooter:
 
 
     def _check_game_over(self):
+        if not self.aliens:
+            time.sleep(1)
+            self._restart_win()
+        else:
+            for alien in self.aliens.copy():
+                #检测外星人与飞船碰撞与飞出屏幕的外星人
+                if (
+                    self._rect_collision(self.ship.rect,alien.rect) or
+                    alien.rect.left < self.screen_rect.left
+                ) :
+                    time.sleep(1)
+                    self._restart_lose()
+                    break
 
-        for alien in self.aliens.copy():
-            #检测外星人与飞船碰撞与飞出屏幕的外星人
-            if (
-                self._rect_collision(self.ship.rect,alien.rect) or
-                alien.rect.left < self.screen_rect.left
-            ) :
-                time.sleep(1)
-                self._restart()
-                break
+
+
 
     #检测碰撞，若俩rect有重叠则返回True
     def _rect_collision(self,rect_1,rect_2):
@@ -215,17 +223,23 @@ class Sidescrollingshooter:
 
         self.aliens.append(new_alien)
 
-    def _restart(self):
+    def _restart_lose(self):
         if self.settings.ship_left > 0 :
             #先清空再生成
-            self.ship.rect.midleft = self.screen_rect.midleft
-            self.aliens.clear()
-            self.bullets.clear()
-            self._create_fleets()
+            self._reset_aliens_bullets_ship()
             self.settings.ship_left -= 1
         else :
             sys.exit()
 
+    def _reset_aliens_bullets_ship(self):
+        self.ship.rect.midleft = self.screen_rect.midleft
+        self.aliens.clear()
+        self.bullets.clear()
+        self._create_fleets()
+
+    def _restart_win(self):
+        self._reset_aliens_bullets_ship()
+        self.settings.alien_xspeed *= self.settings.speed_scale
 
 
 if __name__ == '__main__':
