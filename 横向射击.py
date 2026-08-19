@@ -36,7 +36,7 @@ class Sidescrollingshooter:
 
     def run_game(self):
 
-        
+
         while True:
 
             '''while循环的次数是即为FPS，需要clock来设置
@@ -71,7 +71,7 @@ class Sidescrollingshooter:
             #控制帧率
             self.clock.tick(60)
 
-        
+
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -140,10 +140,48 @@ class Sidescrollingshooter:
             #其他功能
             pass
 
+
+    ###外星人设置：
+    #_update_aliens
+
     def _update_aliens(self):
         for alien in self.aliens:
             #改变外星人位置
             alien.update_position()
+
+        #检测外星人与子弹碰撞
+        i,j = 0,0
+        if self.bullets and self.aliens:
+            for bullet in self.bullets.copy():
+                i += 1
+                for alien in self.aliens.copy():
+                    j+=1
+                    #检测俩个surface有重叠
+                    if not (
+                        bullet.rect.right <= alien.rect.left or
+                        bullet.rect.bottom <= alien.rect.top or
+                        bullet.rect.top >= alien.rect.bottom or
+                        bullet.rect.left >= alien.rect.right
+                    ):
+                        try:
+                            self.bullets.remove(bullet)
+                            print(bullet,bullet.rect)
+                            self.aliens.remove(alien)
+                            print(alien,alien.rect)
+                            print(i,j)
+
+                        except ValueError:
+                            print(self.bullets)
+                            print("出错的子弹:",bullet)
+                            print("出错的外星人:",alien)
+                            print(alien.rect,bullet.rect)
+                            print("子弹列表长度:", len(self.bullets))
+                            print(i,j)
+
+        #清除飞出屏幕的外星人
+        for alien in self.aliens:
+            if alien.rect.right <self.screen_rect.left:
+                self.aliens.remove(alien)
 
             #其他功能
             pass
@@ -154,7 +192,7 @@ class Sidescrollingshooter:
         self.aliens.append(alien)
         alien_width, alien_height = alien.rect.size
         current_x = alien.rect.x
-        current_y = alien.rect.y
+        current_y = alien.rect.y+2*alien.rect.height
         for i in range(3):
             #纵向创建new_alien,在y处创建
             while current_y < self.screen_rect.bottom - alien_height:
