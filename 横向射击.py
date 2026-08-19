@@ -147,17 +147,18 @@ class Sidescrollingshooter:
             #改变外星人位置
             alien.update_position()
 
-        #检测外星人与子弹碰撞
-        # i,j = 0,0
+        # 检测外星人与子弹碰撞
         if self.bullets and self.aliens:
             for bullet in self.bullets.copy():
-                # i += 1
+                bullet_hit = False
                 for alien in self.aliens.copy():
-                    # j+=1
                     #检测俩个surface有重叠
                     if self._rect_collision(bullet.rect,alien.rect):
-                        self.bullets.remove(bullet)
                         self.aliens.remove(alien)
+                        bullet_hit = True
+                if bullet_hit:
+                    self.bullets.remove(bullet)
+
 
     def _check_game_over(self):
 

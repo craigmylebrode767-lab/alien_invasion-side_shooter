@@ -11,7 +11,7 @@ class Bullet():
         后者可以直接设置长宽度；再考虑surface的颜色，pygame.draw.rect()可以直接设置颜色，
         pygame.Surface()创建的surface需要再用fill()方法设置颜色'''
         self.screen = sssgame.screen
-        self.image = pygame.Surface((10,3))
+        self.image = pygame.Surface((10,300))
         self.image.fill((60,60,60))
         self.rect = self.image.get_rect()
 
