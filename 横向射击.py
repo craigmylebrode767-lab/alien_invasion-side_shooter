@@ -42,13 +42,16 @@ class Sidescrollingshooter:
         # self.not_start_sf = self.sta_text.render('not started', True, (0,0,60))
         # self.playing_sf = self.sta_text.render('playing', True, (0,0,60))
         # self.paused_sf = self.sta_text.render('paused', True, (0,0,60))
-        # self.ending_sf = self.sta_text.render('ending', True, (0,0,60))
+        # self.lose_sf = self.sta_text.render('lose', True, (0,0,60))
         # self.game_over_sf = self.sta_text.render('game over', True, (0,0,60))
 
 
 
     def run_game(self):
         while True:
+            #结算上局结果
+            self.settle_round()
+
             #检查键鼠事件
             self._check_events()
 
@@ -75,6 +78,14 @@ class Sidescrollingshooter:
             #控制帧率
             self.clock.tick(60)
 
+    def settle_round(self):
+        if self.status in ['win', 'lose']:
+            self.ship.rect.midleft = self.screen_rect.midleft
+            self.aliens.clear()
+            self.bullets.clear()
+            self._create_fleets()
+
+
     def _check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -84,7 +95,7 @@ class Sidescrollingshooter:
                 if event.key == pygame.K_q:
                     sys.exit()
                 elif event.key == pygame.K_p:  
-                    if self.status in ['not started','paused','ending','game over']:
+                    if self.status in ['not started','paused','win''lose','game over']:
                         self.status = 'playing'
                     elif self.status == 'playing':
                         self.status = 'paused'
@@ -174,16 +185,17 @@ class Sidescrollingshooter:
 
 
     def _check_game_over(self):
-
-        for alien in self.aliens.copy():
-            #检测外星人与飞船碰撞与飞出屏幕的外星人
-            if (
-                self._rect_collision(self.ship.rect,alien.rect) or
-                alien.rect.left < self.screen_rect.left
-            ) :
-                time.sleep(1)
-                self._restart()
-                break
+        if not self.aliens:
+            self.status = 'win'
+        else:
+            for alien in self.aliens.copy():
+                #检测外星人与飞船碰撞与飞出屏幕的外星人
+                if (
+                    self._rect_collision(self.ship.rect,alien.rect) or
+                    alien.rect.left < self.screen_rect.left
+                ) :
+                    self.status = 'lose'
+                    break
 
     #检测碰撞，若俩rect有重叠则返回True
     def _rect_collision(self,rect_1,rect_2):
@@ -221,16 +233,6 @@ class Sidescrollingshooter:
 
         self.aliens.append(new_alien)
 
-    def _restart(self):
-        if self.settings.ship_left > 0 :
-            #先清空再生成
-            self.ship.rect.midleft = self.screen_rect.midleft
-            self.aliens.clear()
-            self.bullets.clear()
-            self._create_fleets()
-            self.settings.ship_left -= 1
-        else :
-            sys.exit()
 
 
 
