@@ -38,6 +38,8 @@ class Sidescrollingshooter:
         #状态管理
         self.status = 'not started'
         self.sta_text = pygame.font.Font('freesansbold.ttf',20)
+        self.ship_left = self.settings.ship_num
+        self.state_timer = 0
 
         # self.not_start_sf = self.sta_text.render('not started', True, (0,0,60))
         # self.playing_sf = self.sta_text.render('playing', True, (0,0,60))
@@ -48,8 +50,9 @@ class Sidescrollingshooter:
 
 
     def run_game(self):
+
         while True:
-            #结算上局结果
+            # 结算上局结果
             self.settle_round()
 
             #检查键鼠事件
@@ -79,12 +82,49 @@ class Sidescrollingshooter:
             self.clock.tick(60)
 
     def settle_round(self):
-        if self.status in ['win', 'lose']:
-            self.ship.rect.midleft = self.screen_rect.midleft
-            self.aliens.clear()
-            self.bullets.clear()
-            self._create_fleets()
+        if self.status not in ['win', 'lose', 'game over']:
+            return
 
+        if self.state_timer > 0:
+            self.state_timer -= 1
+            return
+
+        # 计时结束，真正结算
+        if self.status == 'win':
+            self._reset()
+            self._change_status('not started')
+            for alien in self.aliens:
+                alien.xspeed *= self.settings.speed_scale
+
+        elif self.status == 'lose':
+            self.ship_left -= 1
+            self._reset()
+            if self.ship_left <= 0:
+                self._change_status('game over')
+            else:
+                self._change_status('not started')
+
+        elif self.status == 'game over':
+            # 后续你可以在这里加入“按P重新开始”的逻辑
+            pass
+
+    def _reset(self):
+        self.ship.rect.midleft = self.screen_rect.midleft
+        self.aliens.clear()
+        self.bullets.clear()
+        self._create_fleets()
+
+    def _change_status(self, new_status):
+        self.status = new_status
+
+        if new_status == 'win':
+            self.state_timer = 60
+        elif new_status == 'lose':
+            self.state_timer = 60
+        elif new_status == 'game over':
+            self.state_timer = 120
+        else:
+            self.state_timer = 0
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -94,35 +134,40 @@ class Sidescrollingshooter:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     sys.exit()
-                elif event.key == pygame.K_p:  
-                    if self.status in ['not started','paused','win''lose','game over']:
-                        self.status = 'playing'
-                    elif self.status == 'playing':
-                        self.status = 'paused'
+                elif event.key == pygame.K_p:
+                    self._toggle_status()
                 elif self.status == 'playing':
-                    if event.key == pygame.K_UP:
-                        self.ship.moving_up = True
-                    elif event.key == pygame.K_DOWN:
-                        self.ship.moving_down = True
-                    elif event.key == pygame.K_LEFT:
-                        self.ship.moving_left = True
-                    elif event.key == pygame.K_RIGHT:
-                        self.ship.moving_right = True
-                    elif event.key == pygame.K_SPACE:
-                        self.bullets.append(Bullet(self))
+                    self._check_playing_keydown(event)
 
             elif event.type == pygame.KEYUP:
-                if self.status == 'playing':
-                    if event.key == pygame.K_UP:
-                        self.ship.moving_up = False
-                    elif event.key == pygame.K_DOWN:
-                        self.ship.moving_down = False
-                    elif event.key == pygame.K_LEFT:
-                        self.ship.moving_left = False
-                    elif event.key == pygame.K_RIGHT:
-                        self.ship.moving_right = False
-                    
+                self._check_playing_keyup(event)
+    def _toggle_status(self):
+        if self.status in ['not started', 'paused', 'game over']:
+            self._change_status('playing')
+        elif self.status == 'playing':
+            self._change_status('paused')
 
+    def _check_playing_keydown(self, event):
+        if event.key == pygame.K_UP:
+            self.ship.moving_up = True
+        elif event.key == pygame.K_DOWN:
+            self.ship.moving_down = True
+        elif event.key == pygame.K_LEFT:
+            self.ship.moving_left = True
+        elif event.key == pygame.K_RIGHT:
+            self.ship.moving_right = True
+        elif event.key == pygame.K_SPACE:
+            self.bullets.append(Bullet(self))
+
+    def _check_playing_keyup(self, event):
+        if event.key == pygame.K_UP:
+            self.ship.moving_up = False
+        elif event.key == pygame.K_DOWN:
+            self.ship.moving_down = False
+        elif event.key == pygame.K_LEFT:
+            self.ship.moving_left = False
+        elif event.key == pygame.K_RIGHT:
+            self.ship.moving_right = False
                     
 
 
@@ -185,17 +230,17 @@ class Sidescrollingshooter:
 
 
     def _check_game_over(self):
-        if not self.aliens:
-            self.status = 'win'
-        else:
-            for alien in self.aliens.copy():
-                #检测外星人与飞船碰撞与飞出屏幕的外星人
-                if (
-                    self._rect_collision(self.ship.rect,alien.rect) or
-                    alien.rect.left < self.screen_rect.left
-                ) :
-                    self.status = 'lose'
-                    break
+            if not self.aliens:
+                self._change_status('win')
+            else:
+                for alien in self.aliens.copy():
+                    #检测外星人与飞船碰撞与飞出屏幕的外星人
+                    if (
+                        self._rect_collision(self.ship.rect,alien.rect) or
+                        alien.rect.left < self.screen_rect.left
+                    ) :
+                        self._change_status('lose')
+                        break
 
     #检测碰撞，若俩rect有重叠则返回True
     def _rect_collision(self,rect_1,rect_2):

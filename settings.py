@@ -9,7 +9,7 @@ class Settings():
         self.alien_yspeed = 2
 
         #飞船限额
-        self.ship_left = 3
+        self.ship_num = 3
 
         #
         self.speed_scale = 1.5
