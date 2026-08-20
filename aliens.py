@@ -17,7 +17,7 @@ class Alien():
         self.rect.y = self.rect.height
 
         # alien速度
-        self.xspeed = sssgame.settings.alien_xspeed
+        self.xspeed = sssgame.alien_xspeed
         self.yspeed = sssgame.settings.alien_yspeed
 
     def update_position(self):

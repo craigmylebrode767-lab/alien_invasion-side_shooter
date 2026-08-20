@@ -1,5 +1,6 @@
 import time
 
+
 import pygame
 import sys
 from time import sleep
@@ -22,6 +23,13 @@ class Sidescrollingshooter:
         self.screen =pygame.display.set_mode((800,600))
         self.screen_rect = self.screen.get_rect()
 
+        #状态管理
+        self.status = 'not started'
+        self.sta_text = pygame.font.Font('freesansbold.ttf',20)
+        self.ship_left = self.settings.ship_num
+        self.state_timer = 0
+        self.alien_xspeed = self.settings.alien_xspeed
+
         #时间相关
         self.clock = pygame.time.Clock()
 
@@ -35,11 +43,6 @@ class Sidescrollingshooter:
         self.aliens = []
         self._create_fleets()
 
-        #状态管理
-        self.status = 'not started'
-        self.sta_text = pygame.font.Font('freesansbold.ttf',20)
-        self.ship_left = self.settings.ship_num
-        self.state_timer = 0
 
         # self.not_start_sf = self.sta_text.render('not started', True, (0,0,60))
         # self.playing_sf = self.sta_text.render('playing', True, (0,0,60))
@@ -52,79 +55,15 @@ class Sidescrollingshooter:
     def run_game(self):
 
         while True:
-            # 结算上局结果
-            self.settle_round()
 
-            #检查键鼠事件
             self._check_events()
 
-            if self.status == 'playing':
-                #改变飞船的位置等参数
-                self._update_ship()
+            self._update()
 
-                #改变子弹的位置等参数，清除飞出屏幕的子弹
-                self._update_bullets()
-
-                #改变外星人的位置等参数
-                self._update_aliens()
-
-                #检测是否结束单次游戏
-                self._check_game_over()
-
-            #涂背景色，绘制飞船图像,子弹图像
-            self._update_screen()
-
-            #显示屏幕
-            pygame.display.flip()
-            pygame.display.set_caption("横向射击")
+            self._draw()
 
             #控制帧率
             self.clock.tick(60)
-
-    def settle_round(self):
-        if self.status not in ['win', 'lose', 'game over']:
-            return
-
-        if self.state_timer > 0:
-            self.state_timer -= 1
-            return
-
-        # 计时结束，真正结算
-        if self.status == 'win':
-            self._reset()
-            self._change_status('not started')
-            for alien in self.aliens:
-                alien.xspeed *= self.settings.speed_scale
-
-        elif self.status == 'lose':
-            self.ship_left -= 1
-            self._reset()
-            if self.ship_left <= 0:
-                self._change_status('game over')
-            else:
-                self._change_status('not started')
-
-        elif self.status == 'game over':
-            # 后续你可以在这里加入“按P重新开始”的逻辑
-            pass
-
-    def _reset(self):
-        self.ship.rect.midleft = self.screen_rect.midleft
-        self.aliens.clear()
-        self.bullets.clear()
-        self._create_fleets()
-
-    def _change_status(self, new_status):
-        self.status = new_status
-
-        if new_status == 'win':
-            self.state_timer = 60
-        elif new_status == 'lose':
-            self.state_timer = 60
-        elif new_status == 'game over':
-            self.state_timer = 120
-        else:
-            self.state_timer = 0
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -141,11 +80,82 @@ class Sidescrollingshooter:
 
             elif event.type == pygame.KEYUP:
                 self._check_playing_keyup(event)
+
+    def _update(self):
+        if self.status == 'playing':
+            self._update_playing()
+
+        elif self.status == 'win':
+            self._update_win()
+
+        elif self.status == 'lose':
+            self._update_lose()
+
+        elif self.status == 'paused':
+            pass
+
+        elif self.status == 'game over':
+            pass
+
+    def _update_win(self):
+        self.state_timer -= 1
+
+        if self.state_timer <= 0:
+            # 提升下一轮的速度
+            self.alien_xspeed *= self.settings.speed_scale
+
+            # 创建新一轮舰队
+            self._reset()
+
+            self._change_status('not started')
+
+    def _update_lose(self):
+        self.state_timer -= 1
+
+        if self.state_timer <= 0:
+            self.ship_left -= 1
+
+            if self.ship_left <= 0:
+                self._change_status('game over')
+            else:
+                self._reset()
+                self._change_status('not started')
+
+
+
+    def _draw(self):
+        # 涂背景色，绘制飞船图像,子弹图像
+        self._update_screen()
+        pygame.display.set_caption("横向射击")
+
+        # 显示屏幕
+        pygame.display.flip()
+
+    def _update_playing(self):
+        # 改变飞船的位置等参数
+        self._update_ship()
+
+        # 改变子弹的位置等参数，清除飞出屏幕的子弹
+        self._update_bullets()
+
+        # 改变外星人的位置等参数
+        self._update_aliens()
+
+        # 检测是否结束单次游戏
+        self._check_game_over()
+
     def _toggle_status(self):
-        if self.status in ['not started', 'paused', 'game over']:
+        if self.status in ['not started', 'paused']:
             self._change_status('playing')
+
         elif self.status == 'playing':
             self._change_status('paused')
+
+        elif self.status == 'game over':
+            self.ship_left = self.settings.ship_num
+            self.alien_xspeed = self.settings.alien_xspeed
+            self._reset()
+            self._change_status('playing')
 
     def _check_playing_keydown(self, event):
         if event.key == pygame.K_UP:
@@ -168,7 +178,27 @@ class Sidescrollingshooter:
             self.ship.moving_left = False
         elif event.key == pygame.K_RIGHT:
             self.ship.moving_right = False
-                    
+
+
+
+    def _reset(self):
+        self.ship.rect.midleft = self.screen_rect.midleft
+        self.aliens.clear()
+        self.bullets.clear()
+        self._create_fleets()
+
+    def _change_status(self, new_status):
+        self.status = new_status
+
+        if new_status == 'win':
+            self.state_timer = 60
+        elif new_status == 'lose':
+            self.state_timer = 60
+        elif new_status == 'game over':
+            self.state_timer = 120
+        else:
+            self.state_timer = 0
+
 
 
     def _update_screen(self):
