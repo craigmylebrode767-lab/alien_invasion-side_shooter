@@ -24,11 +24,9 @@ class Sidescrollingshooter:
 
         #时间相关
         self.clock = pygame.time.Clock()
-        self.paused = False
 
         #初始化创建飞船
         self.ship = Ship(self)
-
 
         #子弹
         self.bullets = []
@@ -37,15 +35,27 @@ class Sidescrollingshooter:
         self.aliens = []
         self._create_fleets()
 
+        #状态管理
+        self.status = 'not started'
+        self.sta_text = pygame.font.Font('freesansbold.ttf',20)
 
-       
+        # self.not_start_sf = self.sta_text.render('not started', True, (0,0,60))
+        # self.playing_sf = self.sta_text.render('playing', True, (0,0,60))
+        # self.paused_sf = self.sta_text.render('paused', True, (0,0,60))
+        # self.ending_sf = self.sta_text.render('ending', True, (0,0,60))
+        # self.game_over_sf = self.sta_text.render('game over', True, (0,0,60))
+
+
 
     def run_game(self):
         while True:
             #检查键鼠事件
-            self._check_events()
+            events = pygame.event.get()
+            self._check_events_always(events)
 
-            if not self.paused:
+            if self.status == 'playing':
+                self._check_events_only_playing(events)
+
                 #改变飞船的位置等参数
                 self._update_ship()
 
@@ -63,24 +73,34 @@ class Sidescrollingshooter:
 
             #显示屏幕
             pygame.display.flip()
-            pygame.display.set_caption("横向射击",'sidescrollingshooter')
+            pygame.display.set_caption("横向射击")
 
             #控制帧率
             self.clock.tick(60)
 
 
 
-    def _check_events(self):
-        for event in pygame.event.get():
+    def _check_events_always(self,events):
+        for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     #退出
                     sys.exit()
 
-                elif event.key == pygame.K_UP:
-                    #开始向上移动
-                    self.ship.moving_up =True
+                elif event.key == pygame.K_p:
+                    if self.status in ['not started','paused','ending','game over']:
+                        self.status = 'playing'
+                    elif self.status == 'playing':
+                        self.status = 'paused'
 
+            elif event.type == pygame.QUIT:
+                    sys.exit()
+
+    def _check_events_only_playing(self,events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.ship.moving_up =True
                 elif event.key == pygame.K_DOWN:
                     self.ship.moving_down =True
                 elif event.key == pygame.K_LEFT:
@@ -89,10 +109,6 @@ class Sidescrollingshooter:
                     self.ship.moving_right = True
                 elif event.key == pygame.K_SPACE:
                     self.bullets.append(Bullet(self))
-                elif event.key == pygame.K_p:
-                    self.paused = not self.paused
-
-
 
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
@@ -103,9 +119,6 @@ class Sidescrollingshooter:
                     self.ship.moving_left = False
                 elif event.key == pygame.K_RIGHT:
                     self.ship.moving_right = False
-
-            elif event.type == pygame.QUIT:
-                    sys.exit()
 
     def _update_screen(self):
 
@@ -123,13 +136,11 @@ class Sidescrollingshooter:
         for alien in self.aliens:
             self.screen.blit(alien.image, alien.rect)
 
-        #暂停时绘制文字
-        if self.paused:
-            pause_text = pygame.font.Font('freesansbold.ttf',20)
-            pt_surf = pause_text.render('PAUSE',True,(0,0,255))
-            pt_rect = pt_surf.get_rect()
-            pt_rect.center = self.screen_rect.center
-            self.screen.blit(pt_surf,pt_rect)
+        #状态文字显示
+        self.status_surf = self.sta_text.render(self.status, True, (0, 0, 60))
+        self.status_surf_rect = self.status_surf.get_rect()
+        self.screen.blit(self.status_surf, self.status_surf_rect)
+
 
     def _update_ship(self):
         #改变飞船位置
