@@ -50,12 +50,9 @@ class Sidescrollingshooter:
     def run_game(self):
         while True:
             #检查键鼠事件
-            events = pygame.event.get()
-            self._check_events_always(events)
+            self._check_events()
 
             if self.status == 'playing':
-                self._check_events_only_playing(events)
-
                 #改变飞船的位置等参数
                 self._update_ship()
 
@@ -78,47 +75,45 @@ class Sidescrollingshooter:
             #控制帧率
             self.clock.tick(60)
 
+    def _check_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
 
-
-    def _check_events_always(self,events):
-        for event in events:
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    #退出
                     sys.exit()
-
-                elif event.key == pygame.K_p:
+                elif event.key == pygame.K_p:  
                     if self.status in ['not started','paused','ending','game over']:
                         self.status = 'playing'
                     elif self.status == 'playing':
                         self.status = 'paused'
-
-            elif event.type == pygame.QUIT:
-                    sys.exit()
-
-    def _check_events_only_playing(self,events):
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.ship.moving_up =True
-                elif event.key == pygame.K_DOWN:
-                    self.ship.moving_down =True
-                elif event.key == pygame.K_LEFT:
-                    self.ship.moving_left = True
-                elif event.key == pygame.K_RIGHT:
-                    self.ship.moving_right = True
-                elif event.key == pygame.K_SPACE:
-                    self.bullets.append(Bullet(self))
+                elif self.status == 'playing':
+                    if event.key == pygame.K_UP:
+                        self.ship.moving_up = True
+                    elif event.key == pygame.K_DOWN:
+                        self.ship.moving_down = True
+                    elif event.key == pygame.K_LEFT:
+                        self.ship.moving_left = True
+                    elif event.key == pygame.K_RIGHT:
+                        self.ship.moving_right = True
+                    elif event.key == pygame.K_SPACE:
+                        self.bullets.append(Bullet(self))
 
             elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_UP:
-                    self.ship.moving_up = False
-                elif event.key == pygame.K_DOWN:
-                    self.ship.moving_down = False
-                elif event.key == pygame.K_LEFT:
-                    self.ship.moving_left = False
-                elif event.key == pygame.K_RIGHT:
-                    self.ship.moving_right = False
+                if self.status == 'playing':
+                    if event.key == pygame.K_UP:
+                        self.ship.moving_up = False
+                    elif event.key == pygame.K_DOWN:
+                        self.ship.moving_down = False
+                    elif event.key == pygame.K_LEFT:
+                        self.ship.moving_left = False
+                    elif event.key == pygame.K_RIGHT:
+                        self.ship.moving_right = False
+                    
+
+                    
+
 
     def _update_screen(self):
 
